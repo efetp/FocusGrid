@@ -1,14 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pomodoro Timer</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
+    <link rel="icon" type="image/png" href="favicon.png">
 </head>
+
 <body>
     <div class="container">
         <!-- Header -->
@@ -29,18 +33,21 @@
                     <div class="todo-header-actions">
                         <button id="btn-export" class="icon-btn" title="Export data">
                             <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                                <path d="M7 1v8M4 6.5L7 9.5 10 6.5M2 12.5h10" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M7 1v8M4 6.5L7 9.5 10 6.5M2 12.5h10" stroke="currentColor" stroke-width="1.4"
+                                    stroke-linecap="round" stroke-linejoin="round" />
                             </svg>
                         </button>
                         <button id="btn-import" class="icon-btn" title="Import data">
                             <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                                <path d="M7 9V1M4 3.5L7 0.5 10 3.5M2 12.5h10" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M7 9V1M4 3.5L7 0.5 10 3.5M2 12.5h10" stroke="currentColor" stroke-width="1.4"
+                                    stroke-linecap="round" stroke-linejoin="round" />
                             </svg>
                         </button>
                         <input type="file" id="import-file" accept=".json" style="display:none">
                         <button id="btn-add-task" class="add-btn" title="Add new task">
                             <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-                                <path d="M9 3v12M3 9h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                <path d="M9 3v12M3 9h12" stroke="currentColor" stroke-width="2"
+                                    stroke-linecap="round" />
                             </svg>
                         </button>
                     </div>
@@ -63,11 +70,13 @@
                             <div class="form-group">
                                 <label class="form-label">Category</label>
                                 <div class="category-selector">
-                                    <button type="button" class="cat-btn active" data-category="university">University</button>
+                                    <button type="button" class="cat-btn active"
+                                        data-category="university">University</button>
                                     <button type="button" class="cat-btn" data-category="career">Career</button>
                                     <button type="button" class="cat-btn" data-category="other">Other</button>
                                 </div>
-                                <input type="text" id="custom-category" class="custom-category hidden" placeholder="Enter category name...">
+                                <input type="text" id="custom-category" class="custom-category hidden"
+                                    placeholder="Enter category name...">
                             </div>
 
                             <div class="form-group" id="course-group">
@@ -184,4 +193,5 @@
 
     <script src="js/app.js"></script>
 </body>
+
 </html>
