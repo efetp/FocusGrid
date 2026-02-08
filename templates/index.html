@@ -6,7 +6,7 @@
     <title>Pomodoro Timer</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
@@ -22,42 +22,110 @@
         </header>
 
         <main>
-            <!-- Left: Tasks Panel -->
+            <!-- LEFT: Tasks Panel -->
             <section class="todo-section glass-panel">
-                <h2>Tasks</h2>
+                <div class="todo-header">
+                    <h2>Tasks</h2>
+                    <button id="btn-add-task" class="add-btn" title="Add new task">
+                        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                            <path d="M9 3v12M3 9h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                    </button>
+                </div>
 
-                <!-- Add Todo Form -->
-                <form id="todo-form" class="todo-form glass-inset">
-                    <input type="text" id="todo-name" placeholder="What are you working on?" required>
-                    <div class="todo-form-bottom">
-                        <div class="todo-duration">
-                            <div class="duration-field">
-                                <input type="number" id="todo-hours" min="0" max="24" value="0">
-                                <span class="duration-label">hrs</span>
-                            </div>
-                            <div class="duration-field">
-                                <input type="number" id="todo-minutes" min="0" max="59" value="30">
-                                <span class="duration-label">min</span>
-                            </div>
+                <!-- Add Task Modal -->
+                <div id="task-modal" class="task-modal hidden">
+                    <div class="task-modal-content glass-inset">
+                        <div class="modal-header">
+                            <span class="modal-title">New Task</span>
+                            <button id="btn-close-modal" class="modal-close">&times;</button>
                         </div>
-                        <button type="submit" class="add-task-btn">+ Add</button>
+
+                        <form id="todo-form">
+                            <!-- Task Name -->
+                            <div class="form-group">
+                                <label class="form-label">Task Name</label>
+                                <input type="text" id="todo-name" placeholder="What are you working on?" required>
+                            </div>
+
+                            <!-- Category -->
+                            <div class="form-group">
+                                <label class="form-label">Category</label>
+                                <div class="category-selector">
+                                    <button type="button" class="cat-btn active" data-category="university">University</button>
+                                    <button type="button" class="cat-btn" data-category="career">Career</button>
+                                    <button type="button" class="cat-btn" data-category="other">Other</button>
+                                </div>
+                                <input type="text" id="custom-category" class="custom-category hidden" placeholder="Enter category name...">
+                            </div>
+
+                            <!-- Course (conditional — only for University) -->
+                            <div class="form-group" id="course-group">
+                                <label class="form-label">Course</label>
+                                <select id="todo-course" class="glass-select">
+                                    <option value="">Select course...</option>
+                                    <option value="MECH 560">MECH 560</option>
+                                    <option value="MECH 412">MECH 412</option>
+                                    <option value="MECH 362">MECH 362</option>
+                                    <option value="CAPSTONE">CAPSTONE</option>
+                                    <option value="FACC 400">FACC 400</option>
+                                    <option value="MATH 323">MATH 323</option>
+                                </select>
+                            </div>
+
+                            <!-- Priority & Urgency row -->
+                            <div class="form-row">
+                                <div class="form-group flex-1">
+                                    <label class="form-label">Priority</label>
+                                    <select id="todo-priority" class="glass-select">
+                                        <option value="high">High</option>
+                                        <option value="medium" selected>Medium</option>
+                                        <option value="low">Low</option>
+                                    </select>
+                                </div>
+                                <div class="form-group flex-1">
+                                    <label class="form-label">Urgency</label>
+                                    <select id="todo-urgency" class="glass-select">
+                                        <option value="critical">Critical</option>
+                                        <option value="pressing">Pressing</option>
+                                        <option value="upcoming" selected>Upcoming</option>
+                                        <option value="flexible">Flexible</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Duration -->
+                            <div class="form-group">
+                                <label class="form-label">Estimated Duration</label>
+                                <div class="duration-row">
+                                    <div class="duration-field">
+                                        <input type="number" id="todo-hours" min="0" max="24" value="0">
+                                        <span class="duration-label">hrs</span>
+                                    </div>
+                                    <div class="duration-field">
+                                        <input type="number" id="todo-minutes" min="0" max="59" value="30">
+                                        <span class="duration-label">min</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="submit-task-btn">Add Task</button>
+                        </form>
                     </div>
-                </form>
+                </div>
 
                 <!-- Todo List -->
                 <ul id="todo-list" class="todo-list"></ul>
             </section>
 
-            <!-- Right: Timer Panel -->
+            <!-- CENTER: Timer Panel -->
             <section class="timer-section glass-panel">
-                <!-- Mode Selector -->
                 <div class="mode-selector">
                     <button class="mode-btn active" data-mode="light">Light</button>
                     <button class="mode-btn" data-mode="medium">Medium</button>
                     <button class="mode-btn" data-mode="deep">Deep</button>
                 </div>
 
-                <!-- Timer Ring -->
                 <div class="timer-ring-container">
                     <svg class="timer-ring" viewBox="0 0 200 200">
                         <circle class="timer-ring-bg" cx="100" cy="100" r="90" />
@@ -69,22 +137,45 @@
                     </div>
                 </div>
 
-                <!-- Timer Controls -->
                 <div class="timer-controls">
                     <button id="btn-start" class="control-btn primary">Start</button>
                     <button id="btn-pause" class="control-btn" disabled>Pause</button>
                     <button id="btn-reset" class="control-btn">Reset</button>
                 </div>
 
-                <!-- Current Task Indicator -->
                 <div id="current-task" class="current-task hidden">
                     Working on: <strong id="current-task-name"></strong>
+                </div>
+            </section>
+
+            <!-- RIGHT: Calendar & Clock Panel -->
+            <section class="calendar-section glass-panel">
+                <!-- Live Clock -->
+                <div class="clock-container">
+                    <div id="clock-time" class="clock-time">00:00:00</div>
+                    <div id="clock-date" class="clock-date">Loading...</div>
+                    <div id="clock-timezone" class="clock-timezone"></div>
+                </div>
+
+                <!-- Calendar -->
+                <div class="calendar-container">
+                    <div class="calendar-nav">
+                        <button id="cal-prev" class="cal-nav-btn">&lsaquo;</button>
+                        <span id="cal-month-year" class="cal-month-year"></span>
+                        <button id="cal-next" class="cal-nav-btn">&rsaquo;</button>
+                    </div>
+                    <div class="calendar-grid">
+                        <div class="cal-header">
+                            <span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>
+                        </div>
+                        <div id="cal-days" class="cal-days"></div>
+                    </div>
                 </div>
             </section>
         </main>
     </div>
 
-    <!-- Flash overlay for timer completion -->
+    <!-- Flash overlay -->
     <div id="flash-overlay" class="flash-overlay"></div>
 
     <script src="{{ url_for('static', filename='js/app.js') }}"></script>
