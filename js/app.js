@@ -575,6 +575,32 @@ catButtons.forEach(btn => {
     btn.addEventListener("click", () => setCategory(btn.dataset.category));
 });
 
+// Custom duration arrow buttons
+document.querySelectorAll(".duration-arrow").forEach(btn => {
+    btn.addEventListener("click", () => {
+        const input = document.getElementById(btn.dataset.target);
+        const step = parseInt(btn.dataset.step);
+        const min = parseInt(input.min);
+        const max = parseInt(input.max);
+        let val = parseInt(input.value) || 0;
+
+        if (btn.classList.contains("duration-up")) {
+            if (step === 5) {
+                val = Math.min(max, Math.ceil((val + 1) / 5) * 5);
+            } else {
+                val = Math.min(max, val + step);
+            }
+        } else {
+            if (step === 5) {
+                val = Math.max(min, Math.floor((val - 1) / 5) * 5);
+            } else {
+                val = Math.max(min, val - step);
+            }
+        }
+        input.value = val;
+    });
+});
+
 todoForm.addEventListener("submit", (e) => {
     e.preventDefault();
     const name = document.getElementById("todo-name").value.trim();
