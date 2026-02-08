@@ -526,17 +526,17 @@ main {
 
 .datepicker-dropdown {
     position: absolute;
-    top: calc(100% + 6px);
+    top: calc(100% + 4px);
     left: 0;
-    right: 0;
-    background: rgba(12, 16, 35, 0.95);
+    width: 200px;
+    background: rgba(12, 16, 35, 0.96);
     backdrop-filter: blur(24px);
     -webkit-backdrop-filter: blur(24px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 0.75rem;
-    padding: 0.75rem;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 0.6rem;
+    padding: 0.5rem;
     z-index: 100;
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.5);
     animation: slideDown 0.15s ease;
 }
 
@@ -544,56 +544,55 @@ main {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 0.6rem;
+    margin-bottom: 0.35rem;
 }
 
 .dp-nav-btn {
     background: none;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 0.3rem;
+    border: none;
+    border-radius: 0.25rem;
     color: var(--text-muted);
-    font-size: 1rem;
-    width: 24px;
-    height: 24px;
+    font-size: 0.9rem;
+    width: 20px;
+    height: 20px;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.2s;
+    transition: all 0.15s;
 }
 
 .dp-nav-btn:hover {
     background: rgba(255, 255, 255, 0.06);
     color: var(--text);
-    border-color: rgba(255, 255, 255, 0.15);
 }
 
 .dp-month-year {
-    font-size: 0.72rem;
+    font-size: 0.62rem;
     font-weight: 500;
-    letter-spacing: 0.8px;
-    color: var(--text);
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
 }
 
 .dp-header {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
     text-align: center;
-    margin-bottom: 0.3rem;
+    margin-bottom: 0.15rem;
 }
 
 .dp-header span {
-    font-size: 0.58rem;
+    font-size: 0.5rem;
     font-weight: 600;
-    color: var(--text-muted);
-    letter-spacing: 0.5px;
+    color: rgba(255, 255, 255, 0.3);
+    letter-spacing: 0.3px;
     text-transform: uppercase;
 }
 
 .dp-days {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    gap: 2px;
+    gap: 1px;
 }
 
 .dp-day {
@@ -601,12 +600,12 @@ main {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.68rem;
+    font-size: 0.6rem;
     font-weight: 400;
     color: var(--text-muted);
-    border-radius: 0.3rem;
+    border-radius: 0.25rem;
     cursor: pointer;
-    transition: all 0.15s;
+    transition: all 0.12s;
     border: 1px solid transparent;
 }
 
@@ -616,7 +615,8 @@ main {
 }
 
 .dp-day.other-month {
-    opacity: 0.25;
+    opacity: 0.2;
+    pointer-events: none;
 }
 
 .dp-day.today {
@@ -625,30 +625,29 @@ main {
 }
 
 .dp-day.selected {
-    background: rgba(78, 204, 163, 0.2);
+    background: rgba(78, 204, 163, 0.18);
     color: var(--light);
     font-weight: 600;
-    border-color: rgba(78, 204, 163, 0.3);
+    border-color: rgba(78, 204, 163, 0.25);
 }
 
 .dp-clear-btn {
     width: 100%;
-    margin-top: 0.5rem;
-    padding: 0.35rem;
+    margin-top: 0.3rem;
+    padding: 0.25rem;
     background: none;
-    border: 1px solid rgba(255, 255, 255, 0.06);
-    border-radius: 0.35rem;
-    color: var(--text-muted);
+    border: none;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 0;
+    color: rgba(255, 255, 255, 0.35);
     font-family: inherit;
-    font-size: 0.68rem;
+    font-size: 0.58rem;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: color 0.15s;
     letter-spacing: 0.3px;
 }
 
 .dp-clear-btn:hover {
-    background: rgba(231, 76, 60, 0.1);
-    border-color: rgba(231, 76, 60, 0.2);
     color: var(--deep);
 }
 
