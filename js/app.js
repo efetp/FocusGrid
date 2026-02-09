@@ -1,5 +1,5 @@
 // ============================================================
-// Pomodoro Timer — Static Version (localStorage)
+// FocusGrid — Static Version (localStorage)
 // ============================================================
 
 const MODES = {
@@ -61,14 +61,20 @@ const RING_CIRCUMFERENCE = 2 * Math.PI * 90;
 // LOCAL STORAGE HELPERS
 // ============================================================
 
+// One-time migration of old localStorage key
+if (localStorage.getItem("pomodoro_data") && !localStorage.getItem("focusgrid_data")) {
+    localStorage.setItem("focusgrid_data", localStorage.getItem("pomodoro_data"));
+    localStorage.removeItem("pomodoro_data");
+}
+
 function loadData() {
-    const raw = localStorage.getItem("pomodoro_data");
+    const raw = localStorage.getItem("focusgrid_data");
     if (!raw) return { todos: [], sessions: [] };
     try { return JSON.parse(raw); } catch { return { todos: [], sessions: [] }; }
 }
 
 function saveData(data) {
-    localStorage.setItem("pomodoro_data", JSON.stringify(data));
+    localStorage.setItem("focusgrid_data", JSON.stringify(data));
 }
 
 // ============================================================
@@ -116,7 +122,7 @@ function updateDisplay() {
     const offset = RING_CIRCUMFERENCE * (1 - progress);
     progressRing.style.strokeDasharray = RING_CIRCUMFERENCE;
     progressRing.style.strokeDashoffset = offset;
-    document.title = `${formatTime(remainingSeconds)} — ${isBreak ? "Break" : "Work"} | Pomodoro`;
+    document.title = `${formatTime(remainingSeconds)} — ${isBreak ? "Break" : "Work"} | FocusGrid`;
     document.body.classList.toggle("on-break", isBreak);
 }
 
@@ -174,13 +180,13 @@ function resetTimer() {
     btnPause.disabled = true;
 }
 
-function onTimerComplete() {
+async function onTimerComplete() {
     playAlertSound();
     flashOverlay.classList.add("active");
     setTimeout(() => flashOverlay.classList.remove("active"), 1500);
 
     if (!isBreak) {
-        logSession();
+        await logSession();
         isBreak = true;
         totalSeconds = MODES[currentMode].break * 60;
         remainingSeconds = totalSeconds;
@@ -201,27 +207,38 @@ function onTimerComplete() {
 // SESSION LOGGING (localStorage)
 // ============================================================
 
-function logSession() {
+async function logSession() {
     const taskName = selectedTodoId
         ? document.querySelector(`[data-id="${selectedTodoId}"] .todo-name`)?.textContent || "Unnamed"
         : "No task selected";
 
-    const data = loadData();
-    data.sessions.push({
+    const session = {
         mode: currentMode,
         task: taskName,
         work_minutes: MODES[currentMode].work,
         completed_at: new Date().toISOString(),
         date: new Date().toISOString().split("T")[0],
-    });
-    saveData(data);
-    loadStats();
+    };
+
+    if (currentUser) {
+        await supabaseLogSession(session);
+    } else {
+        const data = loadData();
+        data.sessions.push(session);
+        saveData(data);
+    }
+    await loadStats();
 }
 
-function loadStats() {
-    const data = loadData();
+async function loadStats() {
+    let sessions;
+    if (currentUser) {
+        sessions = await supabaseLoadSessions();
+    } else {
+        sessions = loadData().sessions;
+    }
     const today = new Date().toISOString().split("T")[0];
-    const todaySessions = data.sessions.filter(s => s.date === today);
+    const todaySessions = sessions.filter(s => s.date === today);
     const totalMins = todaySessions.reduce((sum, s) => sum + (s.work_minutes || 0), 0);
     const count = todaySessions.length;
     statPomodoros.textContent = `${count} pomodoro${count !== 1 ? "s" : ""}`;
@@ -368,31 +385,40 @@ function renderTodo(todo) {
     return li;
 }
 
-function loadTodos() {
-    const data = loadData();
+async function loadTodos() {
+    let todos;
+    if (currentUser) {
+        todos = await supabaseLoadTodos();
+    } else {
+        const data = loadData();
+        todos = data.todos;
+    }
     // Sort: tasks with deadlines first (nearest to furthest), then tasks without deadlines
-    data.todos.sort((a, b) => {
+    todos.sort((a, b) => {
         if (a.deadline && b.deadline) return a.deadline.localeCompare(b.deadline);
         if (a.deadline && !b.deadline) return -1;
         if (!a.deadline && b.deadline) return 1;
         return 0;
     });
-    saveData(data);
+    if (!currentUser) {
+        const data = loadData();
+        data.todos = todos;
+        saveData(data);
+    }
     todoList.innerHTML = "";
 
     const filteredTodos = selectedCalendarDate
-        ? data.todos.filter(t => t.deadline === selectedCalendarDate)
-        : data.todos;
+        ? todos.filter(t => t.deadline === selectedCalendarDate)
+        : todos;
 
     filteredTodos.forEach(todo => todoList.appendChild(renderTodo(todo)));
 }
 
-function addTodo(formData) {
+async function addTodo(formData) {
     const totalMins = (formData.hours * 60) + formData.minutes;
     if (totalMins <= 0) return;
 
-    const data = loadData();
-    data.todos.push({
+    const todo = {
         id: Date.now(),
         name: formData.name,
         estimated_minutes: totalMins,
@@ -404,15 +430,28 @@ function addTodo(formData) {
         deadline: formData.deadline,
         completed: false,
         created_at: new Date().toISOString(),
-    });
-    saveData(data);
-    loadTodos();
-    renderCalendar();
+    };
+
+    if (currentUser) {
+        await supabaseAddTodo(todo);
+    } else {
+        const data = loadData();
+        data.todos.push(todo);
+        saveData(data);
+    }
+    await loadTodos();
+    await renderCalendar();
 }
 
-function editTodo(id) {
-    const data = loadData();
-    const todo = data.todos.find(t => t.id === id);
+async function editTodo(id) {
+    let todo;
+    if (currentUser) {
+        const todos = await supabaseLoadTodos();
+        todo = todos.find(t => t.id === id);
+    } else {
+        const data = loadData();
+        todo = data.todos.find(t => t.id === id);
+    }
     if (!todo) return;
 
     editingTodoId = id;
@@ -447,81 +486,119 @@ function editTodo(id) {
     setDeadlineValue(todo.deadline || "");
 }
 
-function updateTodo(id, formData) {
+async function updateTodo(id, formData) {
     const totalMins = (formData.hours * 60) + formData.minutes;
     if (totalMins <= 0) return;
 
-    const data = loadData();
-    const todo = data.todos.find(t => t.id === id);
-    if (!todo) return;
+    if (currentUser) {
+        await supabaseUpdateTodo(id, {
+            name: formData.name,
+            estimated_minutes: totalMins,
+            category: formData.category,
+            custom_category: formData.customCategory,
+            course: formData.course,
+            priority: formData.priority,
+            urgency: formData.urgency,
+            deadline: formData.deadline,
+        });
+    } else {
+        const data = loadData();
+        const todo = data.todos.find(t => t.id === id);
+        if (!todo) return;
 
-    todo.name = formData.name;
-    todo.estimated_minutes = totalMins;
-    todo.category = formData.category;
-    todo.custom_category = formData.customCategory;
-    todo.course = formData.course;
-    todo.priority = formData.priority;
-    todo.urgency = formData.urgency;
-    todo.deadline = formData.deadline;
+        todo.name = formData.name;
+        todo.estimated_minutes = totalMins;
+        todo.category = formData.category;
+        todo.custom_category = formData.customCategory;
+        todo.course = formData.course;
+        todo.priority = formData.priority;
+        todo.urgency = formData.urgency;
+        todo.deadline = formData.deadline;
 
-    saveData(data);
-    loadTodos();
-    renderCalendar();
+        saveData(data);
+    }
+    await loadTodos();
+    await renderCalendar();
 }
 
-function toggleTodo(id, completed) {
-    const data = loadData();
-    const todo = data.todos.find(t => t.id === id);
-    if (todo) { todo.completed = completed; saveData(data); }
-    loadTodos();
+async function toggleTodo(id, completed) {
+    if (currentUser) {
+        await supabaseToggleTodo(id, completed);
+    } else {
+        const data = loadData();
+        const todo = data.todos.find(t => t.id === id);
+        if (todo) { todo.completed = completed; saveData(data); }
+    }
+    await loadTodos();
 }
 
-function deleteTodo(id) {
-    const data = loadData();
-    data.todos = data.todos.filter(t => t.id !== id);
-    saveData(data);
+async function deleteTodo(id) {
+    if (currentUser) {
+        await supabaseDeleteTodo(id);
+    } else {
+        const data = loadData();
+        data.todos = data.todos.filter(t => t.id !== id);
+        saveData(data);
+    }
     if (selectedTodoId === id) {
         selectedTodoId = null;
         currentTaskDiv.classList.add("hidden");
     }
-    loadTodos();
-    renderCalendar();
+    await loadTodos();
+    await renderCalendar();
 }
 
-function selectTodo(id, name) {
+async function selectTodo(id, name) {
     selectedTodoId = id;
     currentTaskName.textContent = name;
     currentTaskDiv.classList.remove("hidden");
-    loadTodos();
+    await loadTodos();
 }
 
 // ============================================================
 // EXPORT / IMPORT
 // ============================================================
 
-function exportData() {
-    const data = loadData();
+async function exportData() {
+    let data;
+    if (currentUser) {
+        const todos = await supabaseLoadTodos();
+        const sessions = await supabaseLoadSessions();
+        data = { todos, sessions };
+    } else {
+        data = loadData();
+    }
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `pomodoro-data-${new Date().toISOString().split("T")[0]}.json`;
+    a.download = `focusgrid-data-${new Date().toISOString().split("T")[0]}.json`;
     a.click();
     URL.revokeObjectURL(url);
 }
 
 function importData(file) {
     const reader = new FileReader();
-    reader.onload = (e) => {
+    reader.onload = async (e) => {
         try {
             const data = JSON.parse(e.target.result);
             if (data.todos && data.sessions) {
-                saveData(data);
-                loadTodos();
-                loadStats();
+                if (currentUser) {
+                    for (const todo of data.todos) {
+                        todo.user_id = currentUser.id;
+                        await supabaseAddTodo(todo);
+                    }
+                    for (const session of data.sessions) {
+                        await supabaseLogSession(session);
+                    }
+                } else {
+                    saveData(data);
+                }
+                await loadTodos();
+                await loadStats();
             }
         } catch {
-            alert("Invalid file format. Please select a valid Pomodoro export file.");
+            alert("Invalid file format. Please select a valid FocusGrid export file.");
         }
     };
     reader.readAsText(file);
@@ -547,14 +624,18 @@ function updateClock() {
 let calendarMonth = new Date().getMonth();
 let calendarYear = new Date().getFullYear();
 
-function getDeadlineDates() {
+async function getDeadlineDates() {
+    if (currentUser) {
+        const dates = await supabaseGetDeadlineDates();
+        return new Set(dates);
+    }
     const data = loadData();
     const dates = new Set();
     data.todos.forEach(t => { if (t.deadline) dates.add(t.deadline); });
     return dates;
 }
 
-function renderCalendar() {
+async function renderCalendar() {
     const months = ["January","February","March","April","May","June",
                     "July","August","September","October","November","December"];
     calMonthYear.textContent = `${months[calendarMonth]} ${calendarYear}`;
@@ -564,7 +645,7 @@ function renderCalendar() {
     const daysInPrev = new Date(calendarYear, calendarMonth, 0).getDate();
     const today = new Date();
     const isCurrentMonth = today.getMonth() === calendarMonth && today.getFullYear() === calendarYear;
-    const deadlineDates = getDeadlineDates();
+    const deadlineDates = await getDeadlineDates();
 
     let html = "";
     for (let i = firstDay - 1; i >= 0; i--) {
@@ -590,15 +671,15 @@ function renderCalendar() {
 
     // Add click listeners to interactive days
     calDays.querySelectorAll(".cal-day-interactive").forEach(dayEl => {
-        dayEl.addEventListener("click", () => {
+        dayEl.addEventListener("click", async () => {
             const date = dayEl.dataset.date;
             if (selectedCalendarDate === date) {
                 selectedCalendarDate = null;
             } else {
                 selectedCalendarDate = date;
             }
-            renderCalendar();
-            loadTodos();
+            await renderCalendar();
+            await loadTodos();
         });
     });
 
@@ -609,10 +690,10 @@ function renderCalendar() {
         const monthNames = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
         filterInfo.innerHTML = `Showing tasks due <strong>${monthNames[d.getMonth()]} ${d.getDate()}</strong> <button id="cal-clear-filter" class="cal-clear-btn">&times;</button>`;
         filterInfo.classList.remove("hidden");
-        document.getElementById("cal-clear-filter").addEventListener("click", () => {
+        document.getElementById("cal-clear-filter").addEventListener("click", async () => {
             selectedCalendarDate = null;
-            renderCalendar();
-            loadTodos();
+            await renderCalendar();
+            await loadTodos();
         });
     } else {
         filterInfo.classList.add("hidden");
@@ -775,7 +856,7 @@ document.querySelectorAll(".duration-arrow").forEach(btn => {
     });
 });
 
-todoForm.addEventListener("submit", (e) => {
+todoForm.addEventListener("submit", async (e) => {
     e.preventDefault();
     const name = document.getElementById("todo-name").value.trim();
     const hours = parseInt(document.getElementById("todo-hours").value) || 0;
@@ -789,27 +870,27 @@ todoForm.addEventListener("submit", (e) => {
     if (name && (hours > 0 || mins > 0)) {
         const formData = { name, hours, minutes: mins, category: selectedCategory, customCategory, course, priority, urgency, deadline };
         if (editingTodoId) {
-            updateTodo(editingTodoId, formData);
+            await updateTodo(editingTodoId, formData);
         } else {
-            addTodo(formData);
+            await addTodo(formData);
         }
         closeModal();
     }
 });
 
-calPrev.addEventListener("click", () => {
+calPrev.addEventListener("click", async () => {
     calendarMonth--;
     if (calendarMonth < 0) { calendarMonth = 11; calendarYear--; }
-    renderCalendar();
+    await renderCalendar();
 });
 
-calNext.addEventListener("click", () => {
+calNext.addEventListener("click", async () => {
     calendarMonth++;
     if (calendarMonth > 11) { calendarMonth = 0; calendarYear++; }
-    renderCalendar();
+    await renderCalendar();
 });
 
-btnExport.addEventListener("click", exportData);
+btnExport.addEventListener("click", () => exportData());
 btnImport.addEventListener("click", () => importFile.click());
 importFile.addEventListener("change", (e) => {
     if (e.target.files[0]) {
@@ -819,12 +900,76 @@ importFile.addEventListener("change", (e) => {
 });
 
 // ============================================================
+// AUTH MODAL HANDLERS
+// ============================================================
+
+const authModal = document.getElementById("auth-modal");
+const btnSignIn = document.getElementById("btn-sign-in");
+const btnCloseAuth = document.getElementById("btn-close-auth");
+const btnSignOut = document.getElementById("btn-sign-out");
+const btnGoogleSignin = document.getElementById("btn-google-signin");
+const authForm = document.getElementById("auth-form");
+const btnAuthToggle = document.getElementById("btn-auth-toggle");
+const authError = document.getElementById("auth-error");
+let authIsSignUp = false;
+
+if (btnSignIn) btnSignIn.addEventListener("click", () => {
+    authModal.classList.remove("hidden");
+});
+
+if (btnCloseAuth) btnCloseAuth.addEventListener("click", () => {
+    authModal.classList.add("hidden");
+    authError.classList.add("hidden");
+});
+
+if (btnSignOut) btnSignOut.addEventListener("click", async () => {
+    await signOut();
+    await loadTodos();
+    await loadStats();
+    await renderCalendar();
+});
+
+if (btnGoogleSignin) btnGoogleSignin.addEventListener("click", () => {
+    signInWithGoogle();
+});
+
+if (btnAuthToggle) btnAuthToggle.addEventListener("click", () => {
+    authIsSignUp = !authIsSignUp;
+    document.getElementById("auth-modal-title").textContent = authIsSignUp ? "Sign Up" : "Sign In";
+    document.getElementById("auth-submit-btn").textContent = authIsSignUp ? "Sign Up" : "Sign In";
+    document.getElementById("auth-toggle-text").textContent = authIsSignUp ? "Already have an account?" : "Don't have an account?";
+    btnAuthToggle.textContent = authIsSignUp ? "Sign In" : "Sign Up";
+    authError.classList.add("hidden");
+});
+
+if (authForm) authForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const email = document.getElementById("auth-email").value.trim();
+    const password = document.getElementById("auth-password").value;
+    authError.classList.add("hidden");
+    try {
+        if (authIsSignUp) {
+            await signUpWithEmail(email, password);
+        } else {
+            await signInWithEmail(email, password);
+        }
+        authModal.classList.add("hidden");
+        authForm.reset();
+    } catch (err) {
+        authError.textContent = err.message;
+        authError.classList.remove("hidden");
+    }
+});
+
+// ============================================================
 // INIT
 // ============================================================
 
-updateDisplay();
-loadTodos();
-loadStats();
-updateClock();
-setInterval(updateClock, 1000);
-renderCalendar();
+(async () => {
+    updateDisplay();
+    await loadTodos();
+    await loadStats();
+    updateClock();
+    setInterval(updateClock, 1000);
+    await renderCalendar();
+})();
