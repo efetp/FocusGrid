@@ -163,21 +163,21 @@ function playAlertSound() {
         audioContext = new (window.AudioContext || window.webkitAudioContext)();
     }
     const now = audioContext.currentTime;
-    function playTone(freq, start, duration) {
+    function playTone(freq, detune, start, duration) {
         const osc = audioContext.createOscillator();
         const gain = audioContext.createGain();
         osc.connect(gain);
         gain.connect(audioContext.destination);
         osc.frequency.value = freq;
-        osc.type = "sine";
-        gain.gain.setValueAtTime(0.3, start);
-        gain.gain.exponentialRampToValueAtTime(0.01, start + duration);
+        osc.detune.value = detune;
+        osc.type = "triangle";
+        gain.gain.setValueAtTime(0.25, start);
+        gain.gain.exponentialRampToValueAtTime(0.001, start + duration);
         osc.start(start);
         osc.stop(start + duration);
     }
-    playTone(523, now, 0.3);
-    playTone(659, now + 0.15, 0.3);
-    playTone(784, now + 0.3, 0.5);
+    playTone(523, 0, now, 0.8);
+    playTone(659, 3, now + 0.2, 0.6);
 }
 
 // ============================================================
