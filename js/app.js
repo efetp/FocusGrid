@@ -20,7 +20,6 @@ let selectedCategory = "university";
 let editingTodoId = null;
 let selectedCalendarDate = null;
 let activeTab = "current";
-let currentView = "list";
 let matrixCategory = "university";
 let expandedQuadrants = new Set();
 
@@ -535,6 +534,9 @@ async function loadTodos() {
     } else {
         filteredTodos.forEach(todo => todoList.appendChild(renderTodo(todo)));
     }
+
+    // Always update matrix when todos change
+    await renderMatrix();
 }
 
 async function addTodo(formData) {
@@ -564,6 +566,7 @@ async function addTodo(formData) {
     }
     await loadTodos();
     await renderCalendar();
+    await renderMatrix();
 }
 
 async function editTodo(id) {
@@ -602,8 +605,8 @@ async function editTodo(id) {
     }
 
     // Set priority and urgency
-    document.getElementById("todo-priority").value = todo.priority || "medium";
-    document.getElementById("todo-urgency").value = todo.urgency || "upcoming";
+    document.getElementById("todo-priority").value = todo.priority || "low";
+    document.getElementById("todo-urgency").value = todo.urgency || "flexible";
 
     // Set deadline
     setDeadlineValue(todo.deadline || "");
@@ -642,6 +645,7 @@ async function updateTodo(id, formData) {
     }
     await loadTodos();
     await renderCalendar();
+    await renderMatrix();
 }
 
 async function toggleTodo(id, completed) {
@@ -687,6 +691,7 @@ async function deleteTodo(id) {
     }
     await loadTodos();
     await renderCalendar();
+    await renderMatrix();
 }
 
 async function selectTodo(id, name) {
@@ -909,17 +914,7 @@ function renderQuadrant(quadrantName, tasks) {
             chip.classList.add("hidden-overflow");
         }
 
-        let deadlineBadge = "";
-        if (task.deadline) {
-            const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-            const d = new Date(task.deadline + "T00:00:00");
-            deadlineBadge = `<span class="task-chip-deadline">${months[d.getMonth()]} ${d.getDate()}</span>`;
-        }
-
-        chip.innerHTML = `
-            <span class="task-chip-name">${escapeHtml(task.name)}</span>
-            ${deadlineBadge}
-        `;
+        chip.innerHTML = `<span class="task-chip-name">${escapeHtml(task.name)}</span>`;
 
         // Click to edit task
         chip.addEventListener("click", () => editTodo(task.id));
@@ -1113,26 +1108,6 @@ document.querySelectorAll(".task-tab").forEach(tab => {
         document.querySelectorAll(".task-tab").forEach(t => t.classList.remove("active"));
         tab.classList.add("active");
         await loadTodos();
-    });
-});
-
-// View mode switching
-document.querySelectorAll(".view-mode-btn").forEach(btn => {
-    btn.addEventListener("click", () => {
-        currentView = btn.dataset.view;
-        document.querySelectorAll(".view-mode-btn").forEach(b => b.classList.remove("active"));
-        btn.classList.add("active");
-
-        if (currentView === "list") {
-            document.getElementById("matrix-view").classList.add("hidden");
-            document.querySelector(".task-tabs").classList.remove("hidden");
-            document.getElementById("todo-list").classList.remove("hidden");
-        } else {
-            document.getElementById("matrix-view").classList.remove("hidden");
-            document.querySelector(".task-tabs").classList.add("hidden");
-            document.getElementById("todo-list").classList.add("hidden");
-            renderMatrix();
-        }
     });
 });
 
@@ -1339,6 +1314,7 @@ if (authForm) authForm.addEventListener("submit", async (e) => {
     updateClock();
     setInterval(updateClock, 1000);
     await renderCalendar();
+    await renderMatrix(); // Always render matrix on init
 
     // Signal that init is done — auth listener can now handle changes
     _appInitialized = true;

@@ -219,71 +219,12 @@
                     </div>
                 </div>
 
-                <!-- View Mode Toggle -->
-                <div class="view-mode-selector">
-                    <button class="view-mode-btn active" data-view="list">List</button>
-                    <button class="view-mode-btn" data-view="matrix">Matrix</button>
-                </div>
-
                 <div class="task-tabs">
                     <button class="task-tab active" data-tab="current">Current Tasks</button>
                     <button class="task-tab" data-tab="completed">Completed</button>
                 </div>
 
                 <ul id="todo-list" class="todo-list"></ul>
-
-                <!-- Eisenhower Matrix View -->
-                <div id="matrix-view" class="matrix-view hidden">
-                    <!-- Category Tabs for Matrix -->
-                    <div class="matrix-category-tabs">
-                        <button class="matrix-cat-btn active" data-category="university">University</button>
-                        <button class="matrix-cat-btn" data-category="career">Career</button>
-                        <button class="matrix-cat-btn" data-category="other">Other</button>
-                    </div>
-
-                    <!-- 2x2 Matrix Grid -->
-                    <div class="matrix-grid">
-                        <!-- Quadrant 1: Do (High+Critical) -->
-                        <div class="matrix-quadrant" data-quadrant="do">
-                            <div class="quadrant-header">
-                                <span class="quadrant-title">Do</span>
-                                <span class="quadrant-subtitle">Urgent & Important</span>
-                            </div>
-                            <ul class="quadrant-tasks" id="quadrant-do"></ul>
-                            <button class="quadrant-expand hidden" data-quadrant="do">+0 more</button>
-                        </div>
-
-                        <!-- Quadrant 2: Schedule (High+Flexible) -->
-                        <div class="matrix-quadrant" data-quadrant="schedule">
-                            <div class="quadrant-header">
-                                <span class="quadrant-title">Schedule</span>
-                                <span class="quadrant-subtitle">Not Urgent & Important</span>
-                            </div>
-                            <ul class="quadrant-tasks" id="quadrant-schedule"></ul>
-                            <button class="quadrant-expand hidden" data-quadrant="schedule">+0 more</button>
-                        </div>
-
-                        <!-- Quadrant 3: Delegate (Low+Critical) -->
-                        <div class="matrix-quadrant" data-quadrant="delegate">
-                            <div class="quadrant-header">
-                                <span class="quadrant-title">Delegate</span>
-                                <span class="quadrant-subtitle">Urgent & Not Important</span>
-                            </div>
-                            <ul class="quadrant-tasks" id="quadrant-delegate"></ul>
-                            <button class="quadrant-expand hidden" data-quadrant="delegate">+0 more</button>
-                        </div>
-
-                        <!-- Quadrant 4: Delete (Low+Flexible) -->
-                        <div class="matrix-quadrant" data-quadrant="delete">
-                            <div class="quadrant-header">
-                                <span class="quadrant-title">Delete</span>
-                                <span class="quadrant-subtitle">Not Urgent & Not Important</span>
-                            </div>
-                            <ul class="quadrant-tasks" id="quadrant-delete"></ul>
-                            <button class="quadrant-expand hidden" data-quadrant="delete">+0 more</button>
-                        </div>
-                    </div>
-                </div>
             </section>
 
             <!-- CENTER: Timer Panel -->
@@ -316,8 +257,8 @@
                 </div>
             </section>
 
-            <!-- RIGHT: Calendar & Clock Panel -->
-            <section class="calendar-section glass-panel">
+            <!-- Live Calendar Card -->
+            <section class="calendar-card glass-panel">
                 <div class="clock-container">
                     <div id="clock-time" class="clock-time">00:00:00</div>
                     <div id="clock-date" class="clock-date">Loading...</div>
@@ -337,6 +278,61 @@
                         <div id="cal-days" class="cal-days"></div>
                     </div>
                     <div id="cal-filter-info" class="cal-filter-info hidden"></div>
+                </div>
+            </section>
+
+            <!-- RIGHT: Eisenhower Matrix Panel -->
+            <section class="matrix-section glass-panel">
+                <h2 class="panel-title">Eisenhower Matrix</h2>
+
+                <!-- Category Tabs for Matrix -->
+                <div class="matrix-category-tabs">
+                    <button class="matrix-cat-btn active" data-category="university">University</button>
+                    <button class="matrix-cat-btn" data-category="career">Career</button>
+                    <button class="matrix-cat-btn" data-category="other">Other</button>
+                </div>
+
+                <!-- 2x2 Matrix Grid -->
+                <div class="matrix-grid">
+                    <!-- Quadrant 1: Do (High+Critical) -->
+                    <div class="matrix-quadrant" data-quadrant="do">
+                        <div class="quadrant-header">
+                            <span class="quadrant-title">Do</span>
+                            <span class="quadrant-subtitle">Urgent & Important</span>
+                        </div>
+                        <ul class="quadrant-tasks" id="quadrant-do"></ul>
+                        <button class="quadrant-expand hidden" data-quadrant="do">+0 more</button>
+                    </div>
+
+                    <!-- Quadrant 2: Schedule (High+Flexible) -->
+                    <div class="matrix-quadrant" data-quadrant="schedule">
+                        <div class="quadrant-header">
+                            <span class="quadrant-title">Schedule</span>
+                            <span class="quadrant-subtitle">Not Urgent & Important</span>
+                        </div>
+                        <ul class="quadrant-tasks" id="quadrant-schedule"></ul>
+                        <button class="quadrant-expand hidden" data-quadrant="schedule">+0 more</button>
+                    </div>
+
+                    <!-- Quadrant 3: Delegate (Low+Critical) -->
+                    <div class="matrix-quadrant" data-quadrant="delegate">
+                        <div class="quadrant-header">
+                            <span class="quadrant-title">Delegate</span>
+                            <span class="quadrant-subtitle">Urgent & Not Important</span>
+                        </div>
+                        <ul class="quadrant-tasks" id="quadrant-delegate"></ul>
+                        <button class="quadrant-expand hidden" data-quadrant="delegate">+0 more</button>
+                    </div>
+
+                    <!-- Quadrant 4: Delete (Low+Flexible) -->
+                    <div class="matrix-quadrant" data-quadrant="delete">
+                        <div class="quadrant-header">
+                            <span class="quadrant-title">Delete</span>
+                            <span class="quadrant-subtitle">Not Urgent & Not Important</span>
+                        </div>
+                        <ul class="quadrant-tasks" id="quadrant-delete"></ul>
+                        <button class="quadrant-expand hidden" data-quadrant="delete">+0 more</button>
+                    </div>
                 </div>
             </section>
         </main>

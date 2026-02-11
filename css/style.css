@@ -105,9 +105,34 @@ header h1 {
 
 main {
     display: grid;
-    grid-template-columns: 1fr 1fr 260px;
+    grid-template-columns: 1fr auto 1.3fr;
+    grid-template-rows: auto auto;
     gap: 1.25rem;
     align-items: start;
+}
+
+.todo-section {
+    grid-column: 1;
+    grid-row: 1 / -1;
+}
+
+.timer-section {
+    grid-column: 2;
+    grid-row: 1;
+}
+
+.calendar-card {
+    grid-column: 2;
+    grid-row: 2;
+    justify-self: center;
+    width: 100%;
+    max-width: 280px;
+}
+
+.matrix-section {
+    grid-column: 3;
+    grid-row: 1 / -1;
+    align-self: stretch;
 }
 
 /* === Glass Panels === */
@@ -787,44 +812,7 @@ main {
     color: var(--deep);
 }
 
-/* --- View Mode Selector --- */
-.view-mode-selector {
-    display: flex;
-    gap: 0.3rem;
-    background: rgba(0, 0, 0, 0.2);
-    border-radius: 0.5rem;
-    padding: 0.2rem;
-    margin-bottom: 0.75rem;
-}
-
-.view-mode-btn {
-    flex: 1;
-    padding: 0.4rem 0.5rem;
-    border: none;
-    border-radius: 0.4rem;
-    background: transparent;
-    color: var(--text-muted);
-    font-family: inherit;
-    font-size: 0.78rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s;
-    letter-spacing: 0.3px;
-}
-
-.view-mode-btn:hover {
-    color: var(--text);
-}
-
-.view-mode-btn.active {
-    background: rgba(78, 204, 163, 0.15);
-    color: var(--light);
-}
-
-/* --- Eisenhower Matrix View --- */
-.matrix-view {
-    margin-top: 0;
-}
+/* --- Eisenhower Matrix --- */
 
 .matrix-category-tabs {
     display: flex;
@@ -861,7 +849,9 @@ main {
 .matrix-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
     gap: 0.75rem;
+    flex: 1;
 }
 
 .matrix-quadrant {
@@ -930,10 +920,6 @@ main {
     padding: 0.45rem 0.6rem;
     cursor: pointer;
     transition: all 0.2s;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 0.5rem;
 }
 
 .matrix-task-chip:hover {
@@ -944,19 +930,10 @@ main {
 .task-chip-name {
     font-size: 0.78rem;
     color: var(--text);
-    flex: 1;
+    display: block;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-}
-
-.task-chip-deadline {
-    font-size: 0.65rem;
-    color: var(--text-muted);
-    background: rgba(0, 0, 0, 0.2);
-    padding: 0.15rem 0.35rem;
-    border-radius: 0.25rem;
-    flex-shrink: 0;
 }
 
 .quadrant-expand {
@@ -1032,8 +1009,15 @@ main {
 }
 
 @keyframes overduePulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.7; }
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.7;
+    }
 }
 
 /* --- Empty State --- */
@@ -1314,7 +1298,6 @@ main {
     flex-direction: column;
     align-items: center;
     padding: 2rem 2rem 1.5rem;
-    order: 2;
 }
 
 .mode-selector {
@@ -1478,9 +1461,24 @@ main {
 /* ============================================================
    RIGHT PANEL — Calendar & Clock
    ============================================================ */
-.calendar-section {
+.calendar-card {
+    padding: 1rem;
+}
+
+.matrix-section {
     padding: 1.25rem;
-    order: 3;
+    display: flex;
+    flex-direction: column;
+}
+
+.panel-title {
+    font-size: 0.8rem;
+    font-weight: 500;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.7);
+    margin-bottom: 1rem;
+    text-align: center;
 }
 
 /* Clock */
@@ -1708,11 +1706,30 @@ body.on-break #timer-label {
 @media (max-width: 900px) {
     main {
         grid-template-columns: 1fr 1fr;
+        grid-template-rows: auto;
     }
 
-    .calendar-section {
+    .todo-section {
+        grid-column: 1;
+        grid-row: auto;
+    }
+
+    .timer-section {
+        grid-column: 2;
+        grid-row: auto;
+    }
+
+    .calendar-card {
         grid-column: 1 / -1;
-        order: 3;
+        grid-row: auto;
+        max-width: 320px;
+        justify-self: center;
+    }
+
+    .matrix-section {
+        grid-column: 1 / -1;
+        grid-row: auto;
+        align-self: auto;
     }
 }
 
@@ -1723,6 +1740,15 @@ body.on-break #timer-label {
 
     main {
         grid-template-columns: 1fr;
+        grid-template-rows: auto;
+    }
+
+    .todo-section,
+    .timer-section,
+    .calendar-card,
+    .matrix-section {
+        grid-column: auto;
+        grid-row: auto;
     }
 
     .timer-section {
@@ -1733,9 +1759,14 @@ body.on-break #timer-label {
         order: 2;
     }
 
-    .calendar-section {
+    .calendar-card {
         order: 3;
-        grid-column: auto;
+        max-width: 100%;
+    }
+
+    .matrix-section {
+        order: 4;
+        align-self: auto;
     }
 
     #timer-time {
@@ -1759,7 +1790,7 @@ body.on-break #timer-label {
     }
 
     main {
-        grid-template-columns: 1.2fr 1fr 300px;
+        grid-template-columns: 1.2fr auto 1.3fr;
         gap: 2rem;
     }
 }
@@ -1771,7 +1802,7 @@ body.on-break #timer-label {
     }
 
     main {
-        grid-template-columns: 1.3fr 1fr 340px;
+        grid-template-columns: 1.3fr auto 1.4fr;
         gap: 2.5rem;
     }
 }
