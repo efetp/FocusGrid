@@ -521,28 +521,31 @@ function renderTodo(todo) {
 
 async function loadTodos() {
     let todos;
-    if (currentUser) {
-        todos = await supabaseLoadTodos();
+    if (cachedTodos !== null) {
+        todos = cachedTodos;
     } else {
-        const data = loadData();
-        todos = data.todos;
-    }
-
-    // Auto-delete completed tasks older than 7 days
-    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
-    const expired = todos.filter(t => t.completed && t.completed_at && t.completed_at < sevenDaysAgo);
-    for (const t of expired) {
+        // Fresh fetch — only path that hits the network
         if (currentUser) {
-            await supabaseDeleteTodo(t.id);
+            todos = await supabaseLoadTodos();
         } else {
-            const data = loadData();
-            data.todos = data.todos.filter(x => x.id !== t.id);
-            saveData(data);
+            todos = loadData().todos;
         }
+        // Auto-delete completed tasks older than 7 days (only on fresh fetch)
+        const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+        const expired = todos.filter(t => t.completed && t.completed_at && t.completed_at < sevenDaysAgo);
+        for (const t of expired) {
+            if (currentUser) {
+                supabaseDeleteTodo(t.id); // fire-and-forget
+            } else {
+                const data = loadData();
+                data.todos = data.todos.filter(x => x.id !== t.id);
+                saveData(data);
+            }
+        }
+        todos = todos.filter(t => !(t.completed && t.completed_at && t.completed_at < sevenDaysAgo));
     }
-    todos = todos.filter(t => !(t.completed && t.completed_at && t.completed_at < sevenDaysAgo));
 
-    cachedTodos = todos; // update in-memory cache with fresh data
+    cachedTodos = todos;
 
     // Sort: tasks with deadlines first (nearest to furthest), then tasks without deadlines
     todos.sort((a, b) => {
@@ -584,7 +587,6 @@ async function loadTodos() {
 }
 
 async function addTodo(formData) {
-    cachedTodos = null;
     const totalMins = (formData.hours * 60) + formData.minutes;
     if (totalMins <= 0) return;
 
@@ -602,8 +604,11 @@ async function addTodo(formData) {
         created_at: new Date().toISOString(),
     };
 
+    // Optimistic: update cache immediately so render is instant
+    if (cachedTodos) cachedTodos.push(todo);
+
     if (currentUser) {
-        await supabaseAddTodo(todo);
+        supabaseAddTodo(todo); // fire-and-forget
     } else {
         const data = loadData();
         data.todos.push(todo);
@@ -657,35 +662,33 @@ async function editTodo(id) {
 }
 
 async function updateTodo(id, formData) {
-    cachedTodos = null;
     const totalMins = (formData.hours * 60) + formData.minutes;
     if (totalMins <= 0) return;
 
+    const updates = {
+        name: formData.name,
+        estimated_minutes: totalMins,
+        category: formData.category,
+        custom_category: formData.customCategory,
+        course: formData.course,
+        priority: formData.priority,
+        urgency: formData.urgency,
+        deadline: formData.deadline,
+    };
+
+    // Optimistic: update cache immediately
+    if (cachedTodos) {
+        const cached = cachedTodos.find(t => t.id === id);
+        if (cached) Object.assign(cached, updates);
+    }
+
     if (currentUser) {
-        await supabaseUpdateTodo(id, {
-            name: formData.name,
-            estimated_minutes: totalMins,
-            category: formData.category,
-            custom_category: formData.customCategory,
-            course: formData.course,
-            priority: formData.priority,
-            urgency: formData.urgency,
-            deadline: formData.deadline,
-        });
+        supabaseUpdateTodo(id, updates); // fire-and-forget
     } else {
         const data = loadData();
         const todo = data.todos.find(t => t.id === id);
         if (!todo) return;
-
-        todo.name = formData.name;
-        todo.estimated_minutes = totalMins;
-        todo.category = formData.category;
-        todo.custom_category = formData.customCategory;
-        todo.course = formData.course;
-        todo.priority = formData.priority;
-        todo.urgency = formData.urgency;
-        todo.deadline = formData.deadline;
-
+        Object.assign(todo, updates);
         saveData(data);
     }
     await loadTodos();
@@ -693,7 +696,6 @@ async function updateTodo(id, formData) {
 }
 
 async function toggleTodo(id, completed) {
-    cachedTodos = null;
     const completedAt = completed ? new Date().toISOString() : null;
 
     if (completed) {
@@ -707,8 +709,14 @@ async function toggleTodo(id, completed) {
         }
     }
 
+    // Optimistic: update cache immediately
+    if (cachedTodos) {
+        const cached = cachedTodos.find(t => t.id === id);
+        if (cached) { cached.completed = completed; cached.completed_at = completedAt; }
+    }
+
     if (currentUser) {
-        await supabaseToggleTodo(id, completed, completedAt);
+        supabaseToggleTodo(id, completed, completedAt); // fire-and-forget
     } else {
         const data = loadData();
         const todo = data.todos.find(t => t.id === id);
@@ -723,9 +731,11 @@ async function toggleTodo(id, completed) {
 }
 
 async function deleteTodo(id) {
-    cachedTodos = null;
+    // Optimistic: remove from cache immediately
+    if (cachedTodos) cachedTodos = cachedTodos.filter(t => t.id !== id);
+
     if (currentUser) {
-        await supabaseDeleteTodo(id);
+        supabaseDeleteTodo(id); // fire-and-forget
     } else {
         const data = loadData();
         data.todos = data.todos.filter(t => t.id !== id);
