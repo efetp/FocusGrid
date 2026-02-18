@@ -9,7 +9,7 @@
     --bg: #1a1a2e;
     --text: #e8e8f0;
     --text-muted: #9a9ab0;
-    --light: #4ecca3;
+    --light: #3caed1;
     --medium: #f0a500;
     --deep: #e74c3c;
     --active-color: var(--light);
@@ -17,7 +17,7 @@
     --glass-border: rgba(255, 255, 255, 0.1);
     --glass-shine: rgba(255, 255, 255, 0.04);
     --priority-high: #e74c3c;
-    --priority-low: #4ecca3;
+    --priority-low: #3caed1;
     --urgency-critical: #e74c3c;
     --urgency-upcoming: #5b9bd5;
     --urgency-flexible: #9a9ab0;
@@ -215,7 +215,7 @@ main {
     height: 34px;
     border: 1px solid rgba(255, 255, 255, 0.12);
     border-radius: 0.6rem;
-    background: rgba(78, 204, 163, 0.1);
+    background: rgba(60, 174, 209, 0.1);
     color: var(--light);
     cursor: pointer;
     display: flex;
@@ -225,9 +225,9 @@ main {
 }
 
 .add-btn:hover {
-    background: rgba(78, 204, 163, 0.2);
-    border-color: rgba(78, 204, 163, 0.3);
-    box-shadow: 0 0 16px rgba(78, 204, 163, 0.15);
+    background: rgba(60, 174, 209, 0.2);
+    border-color: rgba(60, 174, 209, 0.3);
+    box-shadow: 0 0 16px rgba(60, 174, 209, 0.15);
     transform: scale(1.05);
 }
 
@@ -325,7 +325,7 @@ main {
     outline: none;
     border-color: rgba(255, 255, 255, 0.2);
     background: rgba(255, 255, 255, 0.06);
-    box-shadow: 0 0 0 3px rgba(78, 204, 163, 0.08);
+    box-shadow: 0 0 0 3px rgba(60, 174, 209, 0.08);
 }
 
 #todo-name::placeholder,
@@ -365,7 +365,7 @@ main {
 }
 
 .cat-btn.active {
-    background: rgba(78, 204, 163, 0.15);
+    background: rgba(60, 174, 209, 0.15);
     color: var(--light);
 }
 
@@ -392,7 +392,7 @@ main {
 .glass-select:focus {
     outline: none;
     border-color: rgba(255, 255, 255, 0.2);
-    box-shadow: 0 0 0 3px rgba(78, 204, 163, 0.08);
+    box-shadow: 0 0 0 3px rgba(60, 174, 209, 0.08);
 }
 
 .glass-select option {
@@ -448,7 +448,7 @@ main {
     padding: 0.4rem 0.75rem;
     border: none;
     border-radius: 0.4rem;
-    background: rgba(78, 204, 163, 0.15);
+    background: rgba(60, 174, 209, 0.15);
     color: var(--light);
     font-family: inherit;
     font-size: 0.75rem;
@@ -458,7 +458,7 @@ main {
 }
 
 .course-add-btn:hover {
-    background: rgba(78, 204, 163, 0.25);
+    background: rgba(60, 174, 209, 0.25);
 }
 
 .course-search {
@@ -475,7 +475,7 @@ main {
 
 .course-search:focus {
     outline: none;
-    border-color: rgba(78, 204, 163, 0.3);
+    border-color: rgba(60, 174, 209, 0.3);
 }
 
 .course-search::placeholder {
@@ -500,12 +500,12 @@ main {
 }
 
 .course-list::-webkit-scrollbar-thumb {
-    background: rgba(78, 204, 163, 0.3);
+    background: rgba(60, 174, 209, 0.3);
     border-radius: 2px;
 }
 
 .course-list::-webkit-scrollbar-thumb:hover {
-    background: rgba(78, 204, 163, 0.5);
+    background: rgba(60, 174, 209, 0.5);
 }
 
 .course-list li {
@@ -520,7 +520,7 @@ main {
 }
 
 .course-list li:hover {
-    background: rgba(78, 204, 163, 0.08);
+    background: rgba(60, 174, 209, 0.08);
 }
 
 .course-remove-btn {
@@ -611,7 +611,7 @@ main {
 }
 
 .duration-arrow:active {
-    background: rgba(78, 204, 163, 0.15);
+    background: rgba(60, 174, 209, 0.15);
     color: var(--light);
 }
 
@@ -641,7 +641,7 @@ main {
 
 .submit-task-btn:hover {
     opacity: 0.9;
-    box-shadow: 0 4px 15px rgba(78, 204, 163, 0.3);
+    box-shadow: 0 4px 15px rgba(60, 174, 209, 0.3);
 }
 
 /* Custom Date Picker */
@@ -787,10 +787,10 @@ main {
 }
 
 .dp-day.selected {
-    background: rgba(78, 204, 163, 0.18);
+    background: rgba(60, 174, 209, 0.18);
     color: var(--light);
     font-weight: 600;
-    border-color: rgba(78, 204, 163, 0.25);
+    border-color: rgba(60, 174, 209, 0.25);
 }
 
 .dp-clear-btn {
@@ -843,7 +843,7 @@ main {
 }
 
 .matrix-cat-btn.active {
-    background: rgba(78, 204, 163, 0.15);
+    background: rgba(60, 174, 209, 0.15);
     color: var(--light);
 }
 
@@ -870,8 +870,8 @@ main {
 }
 
 .matrix-quadrant[data-quadrant="schedule"] {
-    border-left: 3px solid rgba(78, 204, 163, 0.5);
-    box-shadow: inset 4px 0 8px rgba(78, 204, 163, 0.08);
+    border-left: 3px solid rgba(60, 174, 209, 0.5);
+    box-shadow: inset 4px 0 8px rgba(60, 174, 209, 0.08);
 }
 
 .matrix-quadrant[data-quadrant="delegate"] {
@@ -925,7 +925,7 @@ main {
 
 .matrix-task-chip:hover {
     background: rgba(255, 255, 255, 0.08);
-    border-color: rgba(78, 204, 163, 0.2);
+    border-color: rgba(60, 174, 209, 0.2);
 }
 
 .task-chip-name {
@@ -951,9 +951,9 @@ main {
 }
 
 .quadrant-expand:hover {
-    background: rgba(78, 204, 163, 0.08);
+    background: rgba(60, 174, 209, 0.08);
     color: var(--light);
-    border-color: rgba(78, 204, 163, 0.2);
+    border-color: rgba(60, 174, 209, 0.2);
 }
 
 .matrix-task-chip.hidden-overflow {
@@ -994,7 +994,7 @@ main {
 }
 
 .task-tab.active {
-    background: rgba(78, 204, 163, 0.15);
+    background: rgba(60, 174, 209, 0.15);
     color: var(--light);
 }
 
@@ -1097,7 +1097,7 @@ main {
 }
 
 .tag-category {
-    background: rgba(78, 204, 163, 0.12);
+    background: rgba(60, 174, 209, 0.12);
     color: var(--light);
 }
 
@@ -1112,7 +1112,7 @@ main {
 }
 
 .tag-priority-low {
-    background: rgba(78, 204, 163, 0.12);
+    background: rgba(60, 174, 209, 0.12);
     color: var(--priority-low);
 }
 
@@ -1160,8 +1160,8 @@ main {
 }
 
 .pomo-badge.light {
-    background: rgba(78, 204, 163, 0.1);
-    border-color: rgba(78, 204, 163, 0.15);
+    background: rgba(60, 174, 209, 0.1);
+    border-color: rgba(60, 174, 209, 0.15);
     color: var(--light);
 }
 
@@ -1332,8 +1332,8 @@ main {
 .mode-btn.active[data-mode="light"],
 .mode-btn.active[data-mode="light"]:hover {
     color: var(--light);
-    background: rgba(78, 204, 163, 0.15);
-    box-shadow: 0 0 12px rgba(78, 204, 163, 0.15);
+    background: rgba(60, 174, 209, 0.15);
+    box-shadow: 0 0 12px rgba(60, 174, 209, 0.15);
 }
 
 .mode-btn.active[data-mode="deep"],
@@ -1393,7 +1393,7 @@ main {
     width: 100%;
     height: 100%;
     transform: rotate(-90deg);
-    filter: drop-shadow(0 0 12px rgba(78, 204, 163, 0.2));
+    filter: drop-shadow(0 0 12px rgba(60, 174, 209, 0.2));
 }
 
 .timer-ring-bg {
@@ -1472,13 +1472,13 @@ main {
     color: #0a0a1e;
     border-color: transparent;
     font-weight: 600;
-    box-shadow: 0 4px 15px rgba(78, 204, 163, 0.25);
+    box-shadow: 0 4px 15px rgba(60, 174, 209, 0.25);
 }
 
 .control-btn.primary:hover:not(:disabled) {
     opacity: 0.9;
     border-color: transparent;
-    box-shadow: 0 4px 20px rgba(78, 204, 163, 0.35);
+    box-shadow: 0 4px 20px rgba(60, 174, 209, 0.35);
 }
 
 .current-task {
@@ -1704,31 +1704,31 @@ main {
 }
 
 .cal-day.selected {
-    background: rgba(78, 204, 163, 0.2);
+    background: rgba(60, 174, 209, 0.2);
     color: var(--light);
     font-weight: 600;
-    border: 1px solid rgba(78, 204, 163, 0.3);
+    border: 1px solid rgba(60, 174, 209, 0.3);
 }
 
 .cal-day.today {
-    background: rgba(78, 204, 163, 0.15);
+    background: rgba(60, 174, 209, 0.15);
     color: var(--light);
     font-weight: 600;
-    border: 1px solid rgba(78, 204, 163, 0.25);
-    box-shadow: 0 0 8px rgba(78, 204, 163, 0.1);
+    border: 1px solid rgba(60, 174, 209, 0.25);
+    box-shadow: 0 0 8px rgba(60, 174, 209, 0.1);
 }
 
 .cal-day.today.selected {
-    background: rgba(78, 204, 163, 0.3);
-    border-color: rgba(78, 204, 163, 0.4);
+    background: rgba(60, 174, 209, 0.3);
+    border-color: rgba(60, 174, 209, 0.4);
 }
 
 /* Calendar filter info */
 .cal-filter-info {
     margin-top: 0.75rem;
     padding: 0.45rem 0.65rem;
-    background: rgba(78, 204, 163, 0.08);
-    border: 1px solid rgba(78, 204, 163, 0.15);
+    background: rgba(60, 174, 209, 0.08);
+    border: 1px solid rgba(60, 174, 209, 0.15);
     border-radius: 0.4rem;
     font-size: 0.7rem;
     color: var(--text-muted);
@@ -1905,9 +1905,9 @@ body.on-break #timer-label {
 }
 
 .auth-sign-in-btn {
-    background: rgba(78, 204, 163, 0.15);
-    color: #4ecca3;
-    border: 1px solid rgba(78, 204, 163, 0.3);
+    background: rgba(60, 174, 209, 0.15);
+    color: #3caed1;
+    border: 1px solid rgba(60, 174, 209, 0.3);
     padding: 0.35rem 1rem;
     border-radius: 6px;
     font-size: 0.8rem;
@@ -1917,7 +1917,7 @@ body.on-break #timer-label {
 }
 
 .auth-sign-in-btn:hover {
-    background: rgba(78, 204, 163, 0.25);
+    background: rgba(60, 174, 209, 0.25);
 }
 
 .user-email {
@@ -2026,7 +2026,7 @@ body.on-break #timer-label {
 }
 
 #auth-form input:focus {
-    border-color: rgba(78, 204, 163, 0.5);
+    border-color: rgba(60, 174, 209, 0.5);
 }
 
 #auth-form input::placeholder {
@@ -2044,11 +2044,11 @@ body.on-break #timer-label {
 }
 
 .auth-success {
-    color: #4ecca3;
+    color: #3caed1;
     font-size: 0.78rem;
     margin-bottom: 0.5rem;
-    background: rgba(78, 204, 163, 0.1);
-    border: 1px solid rgba(78, 204, 163, 0.2);
+    background: rgba(60, 174, 209, 0.1);
+    border: 1px solid rgba(60, 174, 209, 0.2);
     border-radius: 6px;
     padding: 0.5rem 0.7rem;
     line-height: 1.4;
@@ -2069,7 +2069,7 @@ body.on-break #timer-label {
 .auth-toggle-btn {
     background: none;
     border: none;
-    color: #4ecca3;
+    color: #3caed1;
     font-size: 0.78rem;
     cursor: pointer;
     padding: 0;

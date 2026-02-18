@@ -3,7 +3,7 @@
 // ============================================================
 
 const MODES = {
-    light: { work: 25, break: 5, color: "#3caed1ff" },
+    light: { work: 25, break: 5, color: "#3caed1" },
     deep: { work: 50, break: 10, color: "#e74c3c" },
     custom: { work: 25, break: 5, color: "#a78bfa" },
 };
