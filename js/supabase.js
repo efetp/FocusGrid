@@ -263,9 +263,8 @@ if (sb) sb.auth.onAuthStateChange(async (event, session) => {
     if (session?.user) {
         currentUser = session.user;
         updateAuthUI(true);
-        // Only reload data on explicit sign-in (not TOKEN_REFRESHED which races
-        // with user actions after tab switch)
-        if (_appInitialized && event === "SIGNED_IN") {
+        if (_appInitialized) {
+            cachedTodos = null; // force fresh fetch (prevent stale cache)
             await migrateLocalStorageToSupabase(currentUser.id);
             if (typeof loadTodos === "function") await loadTodos();
             if (typeof loadStats === "function") await loadStats();

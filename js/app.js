@@ -530,7 +530,7 @@ async function loadTodos() {
                 todos = await supabaseLoadTodos();
             } catch (e) {
                 console.warn("loadTodos fetch failed:", e);
-                todos = [];
+                return; // don't cache empty, don't clear DOM
             }
         } else {
             todos = loadData().todos;
@@ -1574,15 +1574,10 @@ if (authForm) authForm.addEventListener("submit", async (e) => {
     _appInitialized = true;
 })();
 
-// When tab regains focus, invalidate cache and refresh the Supabase session
-// so the next user action has a valid token ready. Don't reload data here —
-// let the user's next action trigger the fresh fetch.
-document.addEventListener("visibilitychange", async () => {
+// When tab regains focus, invalidate cache so the next action fetches fresh.
+document.addEventListener("visibilitychange", () => {
     if (document.visibilityState === "visible" && _appInitialized) {
         cachedTodos = null;
-        if (currentUser && sb) {
-            try { await sb.auth.refreshSession(); } catch (e) {}
-        }
     }
 });
 
