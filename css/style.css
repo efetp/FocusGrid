@@ -13,7 +13,7 @@
     --medium: #f0a500;
     --deep: #e74c3c;
     --active-color: var(--light);
-    --glass-bg: rgba(12, 16, 35, 0.72);
+    --glass-bg: rgba(12, 16, 35, 0.88);
     --glass-border: rgba(255, 255, 255, 0.1);
     --glass-shine: rgba(255, 255, 255, 0.04);
     --priority-high: #e74c3c;
@@ -46,6 +46,7 @@ body::before {
         linear-gradient(to bottom, rgba(5, 5, 20, 0.55) 0%, rgba(5, 5, 20, 0.4) 40%, rgba(5, 5, 20, 0.65) 100%),
         url("https://images.unsplash.com/photo-1519501025264-65ba15a82390?w=1920&q=80") center/cover no-repeat;
     z-index: -1;
+    will-change: transform;
 }
 
 /* === Layout === */
@@ -139,13 +140,13 @@ main {
 /* === Glass Panels === */
 .glass-panel {
     background: var(--glass-bg);
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
     border: 1px solid var(--glass-border);
     border-radius: 1.25rem;
     box-shadow:
         0 8px 32px rgba(0, 0, 0, 0.35),
         inset 0 1px 0 var(--glass-shine);
+    will-change: transform;
+    contain: layout style paint;
 }
 
 .glass-inset {
@@ -692,8 +693,6 @@ main {
     left: 0;
     width: 200px;
     background: rgba(12, 16, 35, 0.96);
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 0.6rem;
     padding: 0.5rem;
@@ -2086,4 +2085,304 @@ body.on-break #timer-label {
 
 .auth-toggle-btn:hover {
     text-decoration: underline;
+}
+
+/* ============================================================ */
+/* Main Nav (Focus / Insights tabs)                             */
+/* ============================================================ */
+
+.main-nav {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 1.25rem;
+}
+
+.main-nav-inner {
+    display: flex;
+    gap: 0.3rem;
+    background: rgba(0, 0, 0, 0.82);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 0.6rem;
+    padding: 0.25rem;
+}
+
+.main-tab {
+    background: transparent;
+    border: none;
+    border-radius: 0.45rem;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.78rem;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    padding: 0.45rem 1.4rem;
+    transition: all 0.2s ease;
+}
+
+.main-tab:hover {
+    color: var(--text);
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.main-tab.active {
+    background: rgba(60, 174, 209, 0.15);
+    color: var(--light);
+    box-shadow: 0 0 12px rgba(60, 174, 209, 0.1);
+}
+
+/* ============================================================ */
+/* Insights Panel                                               */
+/* ============================================================ */
+
+.insights-panel {
+    padding-top: 1.25rem;
+}
+
+.insights-inner {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    max-width: 920px;
+    margin: 0 auto;
+}
+
+/* Week navigation */
+.week-nav {
+    align-items: center;
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    padding: 0.1rem 0 0.25rem;
+}
+
+.week-label {
+    color: var(--text);
+    font-size: 0.88rem;
+    font-weight: 500;
+    min-width: 190px;
+    text-align: center;
+}
+
+.week-nav-btn {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 50%;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 1.1rem;
+    height: 1.85rem;
+    line-height: 1;
+    transition: all 0.15s;
+    width: 1.85rem;
+}
+
+.week-nav-btn:hover {
+    border-color: rgba(255, 255, 255, 0.28);
+    color: var(--text);
+}
+
+.week-nav-btn:disabled {
+    cursor: default;
+    opacity: 0.28;
+}
+
+/* Insights sections — same visual weight as main glass panels */
+.insights-section {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 1.25rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35), inset 0 1px 0 var(--glass-shine);
+    padding: 1.25rem 1.5rem;
+    will-change: transform;
+    contain: layout style paint;
+}
+
+/* Section titles */
+.insights-section-title {
+    color: var(--text-muted);
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.09em;
+    margin: 0 0 0.9rem;
+    text-transform: uppercase;
+}
+
+/* ── Stat Cards ─────────────────────────────────────────────── */
+.stat-cards-grid {
+    display: grid;
+    gap: 0.75rem;
+    grid-template-columns: repeat(4, 1fr);
+}
+
+@media (max-width: 860px) {
+    .stat-cards-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+.stat-card {
+    background: rgba(255, 255, 255, 0.07);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 0.85rem;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    padding: 1rem 1.1rem;
+}
+
+.stat-card-label {
+    color: var(--text-muted);
+    font-size: 0.7rem;
+    letter-spacing: 0.02em;
+}
+
+.stat-card-value {
+    color: var(--text);
+    font-size: 1.55rem;
+    font-weight: 600;
+    line-height: 1.1;
+}
+
+.stat-card-sub {
+    color: var(--text-muted);
+    font-size: 0.68rem;
+    margin-top: 0.1rem;
+}
+
+/* ── Time Allocation Bar Chart ──────────────────────────────── */
+.alloc-chart {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+}
+
+.alloc-row {
+    align-items: center;
+    display: grid;
+    gap: 0.85rem;
+    grid-template-columns: 88px 1fr 44px;
+}
+
+.alloc-label {
+    color: var(--text-muted);
+    font-size: 0.76rem;
+    text-align: right;
+}
+
+.alloc-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 3px;
+    height: 6px;
+    overflow: hidden;
+}
+
+.alloc-fill {
+    border-radius: 3px;
+    height: 100%;
+    transition: width 0.45s ease;
+}
+
+.alloc-value {
+    color: var(--text);
+    font-size: 0.76rem;
+    font-variant-numeric: tabular-nums;
+}
+
+/* ── Quadrant Reality Check ─────────────────────────────────── */
+.quadrant-reality-grid {
+    display: grid;
+    gap: 0.75rem;
+    grid-template-columns: repeat(2, 1fr);
+}
+
+@media (max-width: 520px) {
+    .quadrant-reality-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.qr-tile {
+    background: rgba(255, 255, 255, 0.07);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-left: 3px solid;
+    border-radius: 0.85rem;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 0.9rem 1rem;
+}
+
+.qr-tile[data-q="do"] {
+    border-left-color: var(--deep);
+}
+
+.qr-tile[data-q="schedule"] {
+    border-left-color: var(--light);
+}
+
+.qr-tile[data-q="delegate"] {
+    border-left-color: var(--medium);
+}
+
+.qr-tile[data-q="delete"] {
+    border-left-color: var(--urgency-flexible);
+}
+
+.qr-tile[data-q="unassigned"] {
+    border-left-color: rgba(255, 255, 255, 0.15);
+}
+
+.qr-title {
+    color: var(--text);
+    font-size: 0.82rem;
+    font-weight: 600;
+}
+
+.qr-subtitle {
+    color: var(--text-muted);
+    font-size: 0.68rem;
+}
+
+.qr-value {
+    color: var(--text);
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin-top: 0.2rem;
+}
+
+.qr-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 3px;
+    height: 4px;
+    margin-top: 0.3rem;
+    overflow: hidden;
+}
+
+.qr-fill {
+    border-radius: 3px;
+    height: 100%;
+    transition: width 0.45s ease;
+}
+
+.qr-tile[data-q="do"] .qr-fill {
+    background: var(--deep);
+}
+
+.qr-tile[data-q="schedule"] .qr-fill {
+    background: var(--light);
+}
+
+.qr-tile[data-q="delegate"] .qr-fill {
+    background: var(--medium);
+}
+
+.qr-tile[data-q="delete"] .qr-fill {
+    background: var(--urgency-flexible);
+}
+
+.qr-tile[data-q="unassigned"].qr-fill {
+    background: rgba(255, 255, 255, 0.2);
 }

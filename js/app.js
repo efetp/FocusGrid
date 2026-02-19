@@ -28,6 +28,9 @@ let expandedQuadrants = new Set();
 let cachedTodos = null; // in-memory cache; null means stale/unloaded
 let _todosInflight = null; // dedup concurrent Supabase fetches
 let _cacheGeneration = 0; // incremented on optimistic mutations
+let _activePanel = "focus";
+let insightsWeekOffset = 0;
+let cachedSessions = null; // invalidated after logSession()
 
 // --- DOM Elements ---
 const timerTime = document.getElementById("timer-time");
@@ -360,20 +363,25 @@ async function logSession() {
         data.sessions.push(session);
         saveData(data);
     }
+    cachedSessions = null; // invalidate so next stats/insights load sees fresh data
     await loadStats();
 }
 
 async function loadStats() {
     let sessions;
-    if (currentUser) {
+    if (cachedSessions !== null) {
+        sessions = cachedSessions;
+    } else if (currentUser) {
         try {
             sessions = await supabaseLoadSessions();
+            cachedSessions = sessions;
         } catch (e) {
             console.warn("loadStats fetch failed:", e);
             return;
         }
     } else {
         sessions = loadData().sessions;
+        cachedSessions = sessions;
     }
     const today = new Date().toISOString().split("T")[0];
     const todaySessions = sessions.filter(s => s.date === today);
@@ -1600,6 +1608,231 @@ if (authForm) authForm.addEventListener("submit", async (e) => {
     // Signal that init is done — auth listener can now handle changes
     _appInitialized = true;
 })();
+
+// ============================================================
+// MAIN PANEL SWITCHING (Focus / Insights)
+// ============================================================
+
+function showPanel(name) {
+    _activePanel = name;
+    document.getElementById("focus-panel").classList.toggle("hidden", name !== "focus");
+    document.getElementById("insights-panel").classList.toggle("hidden", name !== "insights");
+    document.querySelectorAll(".main-tab").forEach(t =>
+        t.classList.toggle("active", t.dataset.panel === name)
+    );
+    if (name === "insights") loadInsights();
+}
+
+document.querySelectorAll(".main-tab").forEach(btn => {
+    btn.addEventListener("click", () => showPanel(btn.dataset.panel));
+});
+
+// ============================================================
+// INSIGHTS — WEEK HELPERS
+// ============================================================
+
+function getWeekRange(offset) {
+    const now = new Date();
+    const day = now.getDay(); // 0 = Sun
+    const monday = new Date(now);
+    monday.setDate(now.getDate() - ((day + 6) % 7) + offset * 7);
+    monday.setHours(0, 0, 0, 0);
+    const sunday = new Date(monday);
+    sunday.setDate(monday.getDate() + 6);
+    sunday.setHours(23, 59, 59, 999);
+    return { start: monday, end: sunday };
+}
+
+function formatWeekLabel(range) {
+    const opts = { month: "short", day: "numeric" };
+    const s = range.start.toLocaleDateString("en-US", opts);
+    const e = range.end.toLocaleDateString("en-US", { ...opts, year: "numeric" });
+    return `${s} \u2013 ${e}`;
+}
+
+function inWeek(dateStr, range) {
+    if (!dateStr) return false;
+    const d = new Date(dateStr);
+    return d >= range.start && d <= range.end;
+}
+
+// ============================================================
+// INSIGHTS — ENTRY POINT
+// ============================================================
+
+async function loadInsights() {
+    const range = getWeekRange(insightsWeekOffset);
+    document.getElementById("week-label").textContent = formatWeekLabel(range);
+    document.getElementById("week-next").disabled = insightsWeekOffset >= 0;
+
+    let allSessions;
+    if (cachedSessions !== null) {
+        allSessions = cachedSessions;
+    } else if (currentUser) {
+        try {
+            allSessions = await supabaseLoadSessions();
+            cachedSessions = allSessions;
+        } catch (e) {
+            console.warn("Insights sessions load failed:", e);
+            allSessions = [];
+        }
+    } else {
+        allSessions = loadData().sessions;
+        cachedSessions = allSessions;
+    }
+
+    const weekSessions = allSessions.filter(s => inWeek(s.date, range));
+    const todos = cachedTodos ?? loadData().todos;
+
+    renderWeeklyOverview(weekSessions, todos, range);
+    renderTimeAllocation(weekSessions, todos);
+    renderQuadrantReality(weekSessions, todos);
+}
+
+document.getElementById("week-prev").addEventListener("click", () => {
+    insightsWeekOffset--;
+    loadInsights();
+});
+
+document.getElementById("week-next").addEventListener("click", () => {
+    if (insightsWeekOffset < 0) {
+        insightsWeekOffset++;
+        loadInsights();
+    }
+});
+
+// ============================================================
+// INSIGHTS — SECTION 1: WEEKLY OVERVIEW
+// ============================================================
+
+function renderWeeklyOverview(sessions, todos, range) {
+    const totalMins = sessions.reduce((s, x) => s + (x.work_minutes || 0), 0);
+    const focusHours = (totalMins / 60).toFixed(1);
+
+    const deepCount = sessions.filter(s => s.mode === "deep").length;
+    const lightCount = sessions.filter(s => s.mode === "light").length;
+    const customCount = sessions.filter(s => s.mode === "custom").length;
+
+    const completedThisWeek = todos.filter(t => t.completed && inWeek(t.completed_at, range)).length;
+    const createdThisWeek = todos.filter(t => inWeek(t.created_at, range));
+    const createdAndCompleted = createdThisWeek.filter(t => t.completed).length;
+    const completionRate = createdThisWeek.length > 0
+        ? Math.round(createdAndCompleted / createdThisWeek.length * 100)
+        : null;
+
+    const splitParts = [];
+    if (deepCount) splitParts.push(`${deepCount} deep`);
+    if (lightCount) splitParts.push(`${lightCount} light`);
+    if (customCount) splitParts.push(`${customCount} custom`);
+    const splitDesc = splitParts.join(" / ") || "\u2014";
+
+    const cards = [
+        { label: "Focus Time",       value: `${focusHours}h`, sub: `${totalMins} min total` },
+        { label: "Sessions",         value: sessions.length === 0 ? "\u2014" : String(sessions.length), sub: splitDesc },
+        { label: "Tasks Completed",  value: String(completedThisWeek), sub: "this week" },
+        {
+            label: "Completion Rate",
+            value: completionRate !== null ? `${completionRate}%` : "\u2014",
+            sub: createdThisWeek.length > 0
+                ? `${createdAndCompleted} of ${createdThisWeek.length} created`
+                : "no tasks created"
+        },
+    ];
+
+    document.getElementById("weekly-overview-cards").innerHTML = cards.map(c => `
+        <div class="stat-card">
+            <div class="stat-card-label">${c.label}</div>
+            <div class="stat-card-value">${c.value}</div>
+            <div class="stat-card-sub">${c.sub}</div>
+        </div>
+    `).join("");
+}
+
+// ============================================================
+// INSIGHTS — SECTION 2: TIME ALLOCATION
+// ============================================================
+
+function renderTimeAllocation(sessions, todos) {
+    const todoByName = new Map(todos.map(t => [t.name, t]));
+    const buckets = { university: 0, career: 0, other: 0, unassigned: 0 };
+
+    for (const s of sessions) {
+        const todo = todoByName.get(s.task);
+        const cat = todo?.category ?? "unassigned";
+        const key = Object.prototype.hasOwnProperty.call(buckets, cat) ? cat : "unassigned";
+        buckets[key] += s.work_minutes || 0;
+    }
+
+    const max = Math.max(...Object.values(buckets), 1);
+    const colors  = { university: "var(--light)", career: "var(--medium)", other: "#a78bfa", unassigned: "rgba(255,255,255,0.2)" };
+    const labels  = { university: "University",   career: "Career",        other: "Other",   unassigned: "Unassigned" };
+
+    const rows = Object.entries(buckets)
+        .filter(([k, v]) => k !== "unassigned" || v > 0)
+        .map(([key, mins]) => {
+            const hrs = (mins / 60).toFixed(1);
+            const pct = Math.round(mins / max * 100);
+            return `<div class="alloc-row">
+                <div class="alloc-label">${labels[key]}</div>
+                <div class="alloc-track">
+                    <div class="alloc-fill" style="width:${pct}%;background:${colors[key]}"></div>
+                </div>
+                <div class="alloc-value">${hrs}h</div>
+            </div>`;
+        }).join("");
+
+    document.getElementById("time-allocation-chart").innerHTML = rows ||
+        `<p style="color:var(--text-muted);font-size:0.8rem;margin:0">No focus sessions this week</p>`;
+}
+
+// ============================================================
+// INSIGHTS — SECTION 3: QUADRANT REALITY CHECK
+// ============================================================
+
+function renderQuadrantReality(sessions, todos) {
+    const todoByName = new Map(todos.map(t => [t.name, t]));
+
+    function getQuadrant(todo) {
+        if (!todo) return "unassigned";
+        const p = todo.priority || "low";
+        const u = todo.urgency  || "flexible";
+        if (p === "high" && u === "critical") return "do";
+        if (p === "high" && u === "flexible") return "schedule";
+        if (p === "low"  && u === "critical") return "delegate";
+        return "delete";
+    }
+
+    const buckets = { do: 0, schedule: 0, delegate: 0, delete: 0, unassigned: 0 };
+    for (const s of sessions) {
+        const q = getQuadrant(todoByName.get(s.task));
+        buckets[q] += s.work_minutes || 0;
+    }
+
+    const max = Math.max(...Object.values(buckets), 1);
+    const meta = {
+        do:         { title: "Do",        sub: "Urgent & Important" },
+        schedule:   { title: "Schedule",  sub: "Not Urgent & Important" },
+        delegate:   { title: "Delegate",  sub: "Urgent & Not Important" },
+        delete:     { title: "Eliminate", sub: "Not Urgent & Not Important" },
+        unassigned: { title: "Unassigned", sub: "No task selected" },
+    };
+
+    const tiles = Object.entries(buckets)
+        .filter(([k, v]) => k !== "unassigned" || v > 0)
+        .map(([key, mins]) => {
+            const hrs = (mins / 60).toFixed(1);
+            const pct = Math.round(mins / max * 100);
+            return `<div class="qr-tile" data-q="${key}">
+                <div class="qr-title">${meta[key].title}</div>
+                <div class="qr-subtitle">${meta[key].sub}</div>
+                <div class="qr-value">${hrs}h</div>
+                <div class="qr-track"><div class="qr-fill" style="width:${pct}%"></div></div>
+            </div>`;
+        }).join("");
+
+    document.getElementById("quadrant-reality-grid").innerHTML = tiles ||
+        `<p style="color:var(--text-muted);font-size:0.8rem;margin:0">No focus sessions this week</p>`;
+}
 
 // When tab regains focus, background-refresh while keeping stale cache usable.
 document.addEventListener("visibilitychange", () => {

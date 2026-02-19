@@ -281,6 +281,7 @@ if (sb) sb.auth.onAuthStateChange(async (event, session) => {
         updateAuthUI(true);
         if (_appInitialized && event === "SIGNED_IN") {
             cachedTodos = null;
+            cachedSessions = null;
             await migrateLocalStorageToSupabase(currentUser.id);
             if (typeof loadTodos === "function") await loadTodos();
             if (typeof loadStats === "function") await loadStats();
@@ -291,6 +292,7 @@ if (sb) sb.auth.onAuthStateChange(async (event, session) => {
         currentUser = null;
         updateAuthUI(false);
         if (_appInitialized) {
+            cachedSessions = null;
             if (typeof loadTodos === "function") await loadTodos();
             if (typeof loadStats === "function") await loadStats();
             if (typeof renderCalendar === "function") await renderCalendar();

@@ -84,6 +84,14 @@
             </div>
         </div>
 
+        <nav class="main-nav">
+            <div class="main-nav-inner">
+                <button class="main-tab active" data-panel="focus">Focus</button>
+                <button class="main-tab" data-panel="insights">Insights</button>
+            </div>
+        </nav>
+
+        <div id="focus-panel">
         <main>
             <!-- LEFT: Tasks Panel -->
             <section class="todo-section glass-panel">
@@ -394,7 +402,35 @@
                 </div>
             </section>
         </main>
-    </div>
+        </div><!-- /#focus-panel -->
+
+        <!-- Insights Panel -->
+        <div id="insights-panel" class="insights-panel hidden">
+            <div class="insights-inner">
+                <div class="week-nav">
+                    <button id="week-prev" class="week-nav-btn">&#8249;</button>
+                    <span id="week-label" class="week-label"></span>
+                    <button id="week-next" class="week-nav-btn">&#8250;</button>
+                </div>
+
+                <section class="insights-section">
+                    <h3 class="insights-section-title">Weekly Overview</h3>
+                    <div id="weekly-overview-cards" class="stat-cards-grid"></div>
+                </section>
+
+                <section class="insights-section">
+                    <h3 class="insights-section-title">Time Allocation</h3>
+                    <div id="time-allocation-chart" class="alloc-chart"></div>
+                </section>
+
+                <section class="insights-section">
+                    <h3 class="insights-section-title">Quadrant Reality Check</h3>
+                    <div id="quadrant-reality-grid" class="quadrant-reality-grid"></div>
+                </section>
+            </div>
+        </div><!-- /#insights-panel -->
+
+    </div><!-- /.container -->
 
     <div id="flash-overlay" class="flash-overlay"></div>
 
