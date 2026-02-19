@@ -179,15 +179,20 @@ async function supabaseToggleTodo(id, completed, completedAt) {
 }
 
 async function supabaseLogSession(session) {
-    const { error } = await withTimeout(sb.from("sessions").insert({
+    const payload = {
         user_id: currentUser.id,
         mode: session.mode,
         task: session.task,
         work_minutes: session.work_minutes,
         completed_at: session.completed_at,
         date: session.date
-    }), 8000);
-    if (error) console.warn("Log session error:", error.message);
+    };
+    let { error } = await withTimeout(sb.from("sessions").insert(payload), 8000);
+    if (error) {
+        await withTimeout(sb.auth.refreshSession(), 5000);
+        const retry = await withTimeout(sb.from("sessions").insert(payload), 8000);
+        if (retry.error) console.warn("Log session error:", retry.error.message);
+    }
 }
 
 async function supabaseLoadSessions() {

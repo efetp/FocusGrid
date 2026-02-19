@@ -236,6 +236,15 @@ function setMode(mode) {
     updateDisplay();
     updateSliderHandle();
     toggleBreakSelector(mode === "custom");
+    updateModeInfo();
+}
+
+function updateModeInfo() {
+    const el = document.getElementById("mode-info");
+    if (!el) return;
+    const workMin = currentMode === "custom" ? customWorkMinutes : MODES[currentMode].work;
+    const breakMin = currentMode === "custom" ? customBreakMinutes : MODES[currentMode].break;
+    el.textContent = `${workMin} min work / ${breakMin} min rest`;
 }
 
 function startTimer() {
@@ -294,7 +303,7 @@ async function onTimerComplete() {
     setTimeout(() => flashOverlay.classList.remove("active"), 1500);
 
     if (!isBreak) {
-        await logSession();
+        // Set up break IMMEDIATELY — before any network calls
         isBreak = true;
         if (currentMode === "custom") {
             totalSeconds = customBreakMinutes * 60;
@@ -304,6 +313,9 @@ async function onTimerComplete() {
         remainingSeconds = totalSeconds;
         updateDisplay();
         setTimeout(() => startTimer(), 2000);
+
+        // Log session in background (non-blocking)
+        logSession().catch(e => console.warn("Session log error:", e));
     } else {
         isBreak = false;
         if (currentMode === "custom") {
@@ -338,7 +350,11 @@ async function logSession() {
     };
 
     if (currentUser) {
-        await supabaseLogSession(session);
+        try {
+            await supabaseLogSession(session);
+        } catch (e) {
+            console.warn("Session log failed:", e);
+        }
     } else {
         const data = loadData();
         data.sessions.push(session);
@@ -411,12 +427,7 @@ function setCategory(category) {
         courseGroup.classList.add("hidden");
     }
 
-    if (category === "other") {
-        customCategoryInput.classList.remove("hidden");
-        customCategoryInput.focus();
-    } else {
-        customCategoryInput.classList.add("hidden");
-    }
+    customCategoryInput.classList.add("hidden");
 }
 
 // ============================================================
@@ -1240,6 +1251,7 @@ function onSliderDrag(e) {
     isBreak = false;
     updateDisplay();
     updateSliderHandle();
+    updateModeInfo();
 }
 
 function onSliderEnd() {
@@ -1305,6 +1317,7 @@ document.querySelectorAll(".break-btn").forEach(btn => {
         MODES.custom.break = customBreakMinutes;
         document.querySelectorAll(".break-btn").forEach(b => b.classList.remove("active"));
         btn.classList.add("active");
+        updateModeInfo();
     });
 });
 
@@ -1430,10 +1443,10 @@ document.getElementById("btn-submit-todo").addEventListener("click", async () =>
     const name = document.getElementById("todo-name").value.trim();
     const hours = parseInt(document.getElementById("todo-hours").value) || 0;
     const mins = parseInt(document.getElementById("todo-minutes").value) || 0;
-    const course = selectedCategory === "university" ? document.getElementById("todo-course").value : "";
+    const course = !courseGroup.classList.contains("hidden") ? document.getElementById("todo-course").value : "";
     const priority = document.getElementById("todo-priority").value;
     const urgency = document.getElementById("todo-urgency").value;
-    const customCategory = selectedCategory === "other" ? customCategoryInput.value.trim() : "";
+    const customCategory = "";
     const deadline = document.getElementById("todo-deadline").value;
 
     if (name && (hours > 0 || mins > 0)) {
